@@ -53,48 +53,110 @@
 // // .then
 // // method json()
 
-const btnSearch = document.getElementById("btn-search");
-btnSearch.addEventListener("click", () => {
-  const rsearch = document.getElementById("input-search");
+// const btnSearch = document.getElementById("btn-search");
+// btnSearch.addEventListener("click", () => {
+  
+//   const rsearch = document.getElementById("input-search");
+//   fetch(`//www.omdbapi.com/?apikey=8cc7be28&s=${rsearch.value}`)
+//     .then((response) => response.json())
+//     .then((datas) => {
+//       const movies = datas.Search;
+//       let cards = "";
 
-  fetch(`//www.omdbapi.com/?apikey=8cc7be28&s=${rsearch.value}`)
-    .then((response) => response.json())
-    .then((datas) => {
-      const movies = datas.Search;
-      let cards = "";
+//       movies.forEach(movie => {
+//         cards += cardsList(movie);
+//       });
 
-      movies.forEach(movie => {
-        cards += cardsList(movie);
-      });
-
-      const movieList = document.querySelector('.movieList');
-      movieList.innerHTML = cards;
+//       const movieList = document.querySelector('.movieList');
+//       movieList.innerHTML = cards;
       
-      const btnDetails = document.querySelectorAll('[data-imdbID]');
-      btnDetails.forEach(btnDetail => {
-        btnDetail.addEventListener('click', function(){
-          const imdbID = this.getAttribute("data-imdbID");
+//       const btnDetails = document.querySelectorAll('[data-imdbID]');
+//       btnDetails.forEach(btnDetail => {
+//         btnDetail.addEventListener('click', function(){
+//           const imdbID = this.getAttribute("data-imdbID");
           
-          let detail = "";
-          fetch(`//www.omdbapi.com/?apikey=8cc7be28&i=${imdbID}`)
-          .then(response => response.json())
-          .then(datas => {
-            detail = modalDetail(datas);
-            // console.log(datas);
+//           let detail = "";
+//           fetch(`//www.omdbapi.com/?apikey=8cc7be28&i=${imdbID}`)
+//           .then(response => response.json())
+//           .then(datas => {
+  //             detail = modalDetail(datas);
+//             // console.log(datas);
 
-            const modalDetails = document.querySelector('.details');
-            modalDetails.innerHTML = detail;
+//             const modalDetails = document.querySelector('.details');
+//             modalDetails.innerHTML = detail;
 
-          });
+//           });
 
-        });
-      });
+//         });
+//       });
       
+
+//     });
+
+//   // console.log(btnSearch);
+// });
+
+
+// menambahkan async dan await
+const btnSearch = document.getElementById('btn-search');
+btnSearch.addEventListener('click', async function(){
+  const inputKeyword  = document.getElementById('input-search');
+
+  //ambil resources dari omdb Api berdasarkan search (s = inputkeyword)
+  const movies = await getMovies(inputKeyword.value);
+  
+  // // nah ini masih menghasilkan promise pending --> harus nya ini mengahasilkan array dari get movies
+  // // maka tambahkan async di callback click btn search
+  // // kemudian tambahkan await di get movies supaya variabel movies assignment setelah resolved
+  // console.log(movies);
+  // // setelah ini pasti variable movies isinya array
+  
+  updateCards(movies);
+
+  // ketika details di click
+  const btnDetails = document.querySelectorAll('[data-imdbID]');
+  btnDetails.forEach(btnDetail => {
+    btnDetail.addEventListener('click', async function(){
+      const imdbID = this.getAttribute("data-imdbID");
+
+      const movieDetail = await getMovieDetail(imdbID);
+      addModalDetail(movieDetail);
 
     });
+  });
 
-  // console.log(btnSearch);
 });
+
+function getMovieDetail(imdbID){
+  return fetch(`//www.omdbapi.com/?apikey=8cc7be28&i=${imdbID}`)
+          .then(response => response.json())
+}
+
+function addModalDetail(movieDetail){
+
+  const detail = modalDetail(movieDetail);
+  const modalDetails = document.querySelector('.details');
+  modalDetails.innerHTML = detail;
+
+}
+
+function getMovies(keyword){
+  return fetch(`//www.omdbapi.com/?apikey=8cc7be28&s=${keyword}`)
+  .then(response => response.json()) // masih promise
+  .then(datas => datas.Search)
+}
+
+function updateCards(movies) {
+  let cards = "";
+  
+  movies.forEach(movie => {
+    cards += cardsList(movie);
+  });
+
+  const movieList = document.querySelector('.movieList');
+  movieList.innerHTML = cards;
+
+}
 
 function cardsList(movie) {
   return `
