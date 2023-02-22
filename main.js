@@ -98,59 +98,38 @@
 // menambahkan async dan await
 const btnSearch = document.getElementById("btn-search");
 btnSearch.addEventListener("click", async function () {
-  const inputKeyword = document.getElementById("input-search");
-
-  //ambil resources dari omdb Api berdasarkan search (s = inputkeyword)
-  const movies = await getMovies(inputKeyword.value);
-
-  // // nah ini masih menghasilkan promise pending --> harus nya ini mengahasilkan array dari get movies
-  // // maka tambahkan async di callback click btn search
-  // // kemudian tambahkan await di get movies supaya variabel movies assignment setelah resolved
-  // console.log(movies);
-  // // setelah ini pasti variable movies isinya array
-
-  updateCards(movies);
-
-  // // ketika details di click
-  // const btnDetails = document.querySelectorAll('[data-imdbID]');
-  // btnDetails.forEach(btnDetail => {
-  //   btnDetail.addEventListener('click', async function(){
-  //     // const imdbID = this.getAttribute("data-imdbID");
-  //     const imdbID = this.dataset.imdbid;
-
-  //     const movieDetail = await getMovieDetail(imdbID);
-  //     addModalDetail(movieDetail);
-
-  //   });
-  // });
-});
-
-// // event binding
-
-document.addEventListener("click", async function (e) {
-  if (e.target.dataset.imdbid) {
-    const imdbID = e.target.dataset.imdbid;
-    const movieDetail = await getMovieDetail(imdbID);
-    addModalDetail(movieDetail);
+  try {
+    const inputKeyword = document.getElementById("input-search");
+    //ambil resources dari omdb Api berdasarkan search (s = inputkeyword)
+    const movies = await getMovies(inputKeyword.value);
+    // // nah ini masih menghasilkan promise pending --> harus nya ini mengahasilkan array dari get movies
+    // // maka tambahkan async di callback click btn search
+    // // kemudian tambahkan await di get movies supaya variabel movies assignment setelah resolved
+    // console.log(movies);
+    // // setelah ini pasti variable movies isinya array
+    updateCards(movies);
+  } catch (err) {
+    // console.log(err);
+    alert(err);
   }
 });
 
-function getMovieDetail(imdbID) {
-  return fetch(`//www.omdbapi.com/?apikey=8cc7be28&i=${imdbID}`).then(
-    (response) => response.json()
-  );
-}
-
-function addModalDetail(movieDetail) {
-  const detail = modalDetail(movieDetail);
-  const modalDetails = document.querySelector(".details");
-  modalDetails.innerHTML = detail;
-}
-
 function getMovies(keyword) {
-  return fetch(`//www.omdbapi.com/?apikey=8cc7be28&s=${keyword}`)
-    .then((response) => response.json()) // masih promise
-    .then((datas) => datas.Search);
+  return fetch(`http://www.omdbapi.com/?apikey=8cc7be28&s=${keyword}`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Api key salah" + response.statusText);
+      } else {
+        return response.json();
+      }
+    })
+    .then((datas) => {
+      if (datas.Response === "False") {
+        throw new Error("Data Movie Kosong " + datas.Error);
+      } else {
+        return datas.Search;
+      }
+    });
 }
 
 function updateCards(movies) {
@@ -162,6 +141,27 @@ function updateCards(movies) {
 
   const movieList = document.querySelector(".movieList");
   movieList.innerHTML = cards;
+}
+
+// // event binding
+document.addEventListener("click", async function (e) {
+  if (e.target.dataset.imdbid) {
+    const imdbID = e.target.dataset.imdbid;
+    const movieDetail = await getMovieDetail(imdbID);
+    addModalDetail(movieDetail);
+  }
+});
+
+function getMovieDetail(imdbID) {
+  return fetch(`http://www.omdbapi.com/?apikey=8cc7be28&i=${imdbID}`).then(
+    (response) => response.json()
+  );
+}
+
+function addModalDetail(movieDetail) {
+  const detail = modalDetail(movieDetail);
+  const modalDetails = document.querySelector(".details");
+  modalDetails.innerHTML = detail;
 }
 
 function cardsList(movie) {
