@@ -1,51 +1,99 @@
-$("#btn-search").on("click", function () {
-  let rsearch = $("#input-search").val();
-  console.log(rsearch);
+// $("#btn-search").on("click", function () {
+//   let rsearch = $("#input-search").val();
+//   console.log(rsearch);
 
-  $.ajax({
-    dataType: "json",
-    url: `//www.omdbapi.com/?apikey=8cc7be28&s=${rsearch}`,
-    // data: data,
-    success: function (response) {
-      console.log(response);
-      
+//   $.ajax({
+//     dataType: "json",
+//     url: `//www.omdbapi.com/?apikey=8cc7be28&s=${rsearch}`,
+//     // data: data,
+//     success: function (response) {
+//       console.log(response);
+
+//       let cards = "";
+
+//       if (response.Response === "False") {
+
+//         cards = `<h1>Result : 0 Film </h1>`;
+//         $(".movieList").html(cards);
+
+//       } else {
+//         const movies = response.Search;
+
+//         movies.forEach((movie) => {
+//           cards += cardsList(movie);
+//         });
+
+//         $(".movieList").html(cards);
+
+//         $("[data-imdbID]").on("click", function () {
+//           // const imdbId = this.getAttribute("data-imdbID");
+//           // const imdbId = $(this).attr("data-imdbID");
+//           // console.log(imdbId);
+//           // ${$(this).attr("data-imdbID")}
+//           $.ajax({
+//             dataType: "json",
+//             url: `//www.omdbapi.com/?apikey=8cc7be28&i=${$(this).data('imdbID')}`,
+//             success: function (d) {
+//               const detail = modalDetail(d);
+
+//               $(".details").html(detail);
+//             },
+//           });
+//         });
+//       }
+//     },
+//     error: function (response) {
+//       console.log("error");
+//     },
+//   });
+// });
+
+// // ganti dengan Fetch
+// // promise
+// // .then
+// // method json()
+
+const btnSearch = document.getElementById("btn-search");
+btnSearch.addEventListener("click", () => {
+  const rsearch = document.getElementById("input-search");
+
+  fetch(`//www.omdbapi.com/?apikey=8cc7be28&s=${rsearch.value}`)
+    .then((response) => response.json())
+    .then((datas) => {
+      const movies = datas.Search;
       let cards = "";
 
-      if (response.Response === "False") {
+      movies.forEach(movie => {
+        cards += cardsList(movie);
+      });
 
-        cards = `<h1>Result : 0 Film </h1>`;
-        $(".movieList").html(cards);
+      const movieList = document.querySelector('.movieList');
+      movieList.innerHTML = cards;
       
-      } else {
-        const movies = response.Search;
+      const btnDetails = document.querySelectorAll('[data-imdbID]');
+      btnDetails.forEach(btnDetail => {
+        btnDetail.addEventListener('click', function(){
+          const imdbID = this.getAttribute("data-imdbID");
+          
+          let detail = "";
+          fetch(`//www.omdbapi.com/?apikey=8cc7be28&i=${imdbID}`)
+          .then(response => response.json())
+          .then(datas => {
+            detail = modalDetail(datas);
+            // console.log(datas);
 
-        movies.forEach((movie) => {
-          cards += cardsList(movie);
-        });
+            const modalDetails = document.querySelector('.details');
+            modalDetails.innerHTML = detail;
 
-        $(".movieList").html(cards);
-
-        $("[data-imdbID]").on("click", function () {
-          // const imdbId = this.getAttribute("data-imdbID");
-          // const imdbId = $(this).attr("data-imdbID");
-          // console.log(imdbId);
-          // ${$(this).attr("data-imdbID")}
-          $.ajax({
-            dataType: "json",
-            url: `//www.omdbapi.com/?apikey=8cc7be28&i=${$(this).data('imdbID')}`,
-            success: function (d) {
-              const detail = modalDetail(d);
-
-              $(".details").html(detail);
-            },
           });
+
         });
-      }
-    },
-    error: function (response) {
-      console.log("error");
-    },
-  });
+      });
+      
+
+    });
+
+  // console.log(btnSearch);
 });
 
 function cardsList(movie) {
@@ -59,11 +107,11 @@ function cardsList(movie) {
               <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalDetails" data-imdbID="${movie.imdbID}">Details</a>
           </div>
       </div>
-  </div>`
+  </div>`;
 }
 
-function modalDetail(d){
-  return`
+function modalDetail(d) {
+  return `
   <div class="modal-content">
   <div class="modal-header">
     <h1 class="modal-title fs-5" id="modalDetailsLabel">${d.Genre}</h1>
@@ -101,5 +149,5 @@ function modalDetail(d){
       Close
     </button>
   </div>
-</div>`
+</div>`;
 }
